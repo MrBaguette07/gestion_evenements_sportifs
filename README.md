@@ -48,9 +48,7 @@ Ce projet Symfony 7 permet de gérer des événements sportifs, de leur créatio
    ```
 
 6. Accédez à l'application dans votre navigateur :
-   ```
 http://localhost:8000/
-   ```
 
 ---
 
