@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block body %}
+<div class="hero">
+    <div class="hero-content">
+        <h1>Bienvenue sur la plateforme de gestion des événements sportifs</h1>
+        <p>Organisez et gérez vos événements sportifs avec simplicité. Inscrivez des participants, consultez les événements, et bien plus encore.</p>
+        <div class="hero-buttons">
+            <a href="{{ path('list_events') }}" class="btn btn-primary">Voir la liste des événements</a>
+            <a href="{{ path('add_event') }}" class="btn btn-success">Créer un nouvel événement</a>
+        </div>
+    </div>
+</div>
+
+<section class="features">
+    <h2>Fonctionnalités principales</h2>
+    <div class="features-grid">
+        <div class="feature">
+            <h3>Création d'événements</h3>
+            <p>Planifiez vos événements avec des informations détaillées, comme la date, le lieu et le nombre de participants.</p>
+        </div>
+        <div class="feature">
+            <h3>Inscription facile</h3>
+            <p>Ajoutez des participants en quelques clics grâce à un formulaire intuitif.</p>
+        </div>
+        <div class="feature">
+            <h3>Vue d'ensemble</h3>
+            <p>Consultez tous les événements et gérez-les depuis une interface simple et conviviale.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

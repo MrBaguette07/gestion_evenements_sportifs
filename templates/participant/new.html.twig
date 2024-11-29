@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un participant{% endblock %}
+
+{% block body %}
+<h1>Ajouter un participant</h1>
+
+{% if app.flashes('error') %}
+    <div class="alert alert-danger">
+        {% for message in app.flashes('error') %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post">
+    <div>
+        <label for="name">Nom :</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+    <div>
+        <label for="email">Email :</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+    <button type="submit">Ajouter</button>
+</form>
+
+<a href="{{ path('view_event', {id: event.id}) }}">Annuler</a>
+
+{% endblock %}

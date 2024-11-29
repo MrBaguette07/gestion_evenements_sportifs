@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de l'événement{% endblock %}
+
+{% block body %}
+<h1>Détails de l'événement</h1>
+
+<p><strong>ID :</strong> {{ event.id }}</p>
+<p><strong>Nom :</strong> {{ event.name }}</p>
+<p><strong>Date :</strong> {{ event.date|date('d-m-Y H:i') }}</p>
+<p><strong>Lieu :</strong> {{ event.location }}</p>
+
+<h2>Participants</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for participant in event.participants %}
+            <tr>
+                <td>{{ participant.id }}</td>
+                <td>{{ participant.name }}</td>
+                <td>{{ participant.email }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">Aucun participant inscrit.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ path('add_participant', {eventId: event.id}) }}">Ajouter un participant</a>
+<a href="{{ path('list_events') }}">Retour à la liste</a>
+{% endblock %}
