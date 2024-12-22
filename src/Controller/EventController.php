@@ -26,7 +26,7 @@ class EventController extends AbstractController
     #[Route('/', name: 'home')]
     public function home(): Response
     {
-        return $this->render('home.html.twig');
+        return $this->render('home/index.html.twig');
     }
 
     #[Route('/events', name: 'list_events')]
@@ -133,5 +133,71 @@ class EventController extends AbstractController
 
         return $this->render('event/add.html.twig');
     }
+
+    #[Route('/events/{id}/delete', name: 'delete_event')]
+    public function deleteEvent(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $event = $this->doctrine->getRepository(Event::class)->find($id);
+        if (!$event) {
+            throw $this->createNotFoundException('Événement non trouvé');
+        }
+
+        $entityManager->remove($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Événement supprimé avec succès');
+        return $this->redirectToRoute('list_events');
+    }
+
+    #[Route('/events/{id}/edit', name: 'edit_event')]
+    public function editEvent(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer l'événement à modifier
+        $event = $this->doctrine->getRepository(Event::class)->find($id);
+        if (!$event) {
+            throw $this->createNotFoundException('Événement non trouvé');
+        }
+
+        // Vérifier si le formulaire est soumis
+        if ($request->isMethod('POST')) {
+            $name = $request->request->get('name');
+            $dateInput = $request->request->get('date');
+            $location = $request->request->get('location');
+            $latitude = $request->request->get('latitude');
+            $longitude = $request->request->get('longitude');
+
+            // Valider et traiter la date
+            $date = \DateTime::createFromFormat('Y-m-d\TH:i', $dateInput);
+
+            // Vérifications de validation
+            if (!$name || !$date || !$location || !$latitude || !$longitude) {
+                $this->addFlash('error', 'Tous les champs sont obligatoires.');
+                return $this->redirectToRoute('edit_event', ['id' => $id]);
+            }
+
+            // Mettre à jour les informations de l'événement
+            $event->setName($name);
+            $event->setDate($date);
+            $event->setLocation($location);
+            $event->setLatitude($latitude);
+            $event->setLongitude($longitude);
+
+            // Sauvegarder les changements dans la base de données
+            $entityManager->persist($event);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Événement mis à jour avec succès !');
+            return $this->redirectToRoute('list_events');
+        }
+
+        // Renvoyer la vue avec l'événement existant
+        return $this->render('event/edit.html.twig', [
+            'event' => $event,
+        ]);
+    }
+
+
+
+
 
 }

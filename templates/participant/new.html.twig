@@ -3,28 +3,21 @@
 {% block title %}Ajouter un participant{% endblock %}
 
 {% block body %}
-<h1>Ajouter un participant</h1>
+<h1>Ajouter un participant à l'événement "{{ event.name }}"</h1>
 
-{% if app.flashes('error') %}
-    <div class="alert alert-danger">
-        {% for message in app.flashes('error') %}
-            <p>{{ message }}</p>
-        {% endfor %}
+<!-- Formulaire pour ajouter un participant -->
+<form method="POST" action="{{ path('add_participant', {id: event.id}) }}">
+    <div class="mb-3">
+        <label for="participant_name" class="form-label">Nom du participant</label>
+        <input type="text" class="form-control" id="participant_name" name="name" required>
     </div>
-{% endif %}
-
-<form method="post">
-    <div>
-        <label for="name">Nom :</label>
-        <input type="text" id="name" name="name" required>
+    <div class="mb-3">
+        <label for="participant_email" class="form-label">Email du participant</label>
+        <input type="email" class="form-control" id="participant_email" name="email" required>
     </div>
-    <div>
-        <label for="email">Email :</label>
-        <input type="email" id="email" name="email" required>
-    </div>
-    <button type="submit">Ajouter</button>
+    <button type="submit" class="btn btn-primary">Ajouter le participant</button>
 </form>
 
-<a href="{{ path('view_event', {id: event.id}) }}">Annuler</a>
+<a href="{{ path('view_event', {id: event.id}) }}" class="btn btn-secondary mt-3">Retour à l'événement</a>
 
 {% endblock %}

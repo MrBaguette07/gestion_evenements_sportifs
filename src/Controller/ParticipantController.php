@@ -13,46 +13,32 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ParticipantController extends AbstractController
 {
-    #[Route('/events/{eventId}/participants/new', name: 'add_participant', requirements: ['eventId' => '\d+'])]
-    public function addParticipant(
-        int $eventId,
-        Request $request,
-        EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
-    ): Response {
-        $event = $entityManager->getRepository(Event::class)->find($eventId);
-    
+    #[Route('/events/{id}/participants/new', name: 'add_participant', methods: ['POST', 'GET'])]
+    public function addParticipant(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $event = $entityManager->getRepository(Event::class)->find($id);
         if (!$event) {
-            throw $this->createNotFoundException('Événement introuvable.');
+            throw $this->createNotFoundException('Événement non trouvé');
         }
-    
+
         if ($request->isMethod('POST')) {
             $name = $request->request->get('name');
             $email = $request->request->get('email');
-    
+
             $participant = new Participant();
             $participant->setName($name);
             $participant->setEmail($email);
             $participant->setEvent($event);
-    
-            $errors = $validator->validate($participant);
-    
-            if (count($errors) > 0) {
-                foreach ($errors as $error) {
-                    $this->addFlash('error', $error->getMessage());
-                }
-    
-                return $this->redirectToRoute('add_participant', ['eventId' => $eventId]);
-            }
-    
+
             $entityManager->persist($participant);
             $entityManager->flush();
-    
+
             $this->addFlash('success', 'Participant ajouté avec succès !');
-            return $this->redirectToRoute('view_event', ['id' => $eventId]);
+
+            return $this->redirectToRoute('view_event', ['id' => $id]);
         }
-    
-        return $this->render('participant/new.html.twig', [
+
+        return $this->render('participant/add_participant.html.twig', [
             'event' => $event,
         ]);
     }

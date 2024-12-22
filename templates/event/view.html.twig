@@ -11,7 +11,11 @@
 <p><strong>Lieu :</strong> {{ event.location }}</p>
 
 <h2>Participants</h2>
-<table>
+
+<!-- Lien pour ajouter un participant -->
+<a href="{{ path('add_participant', {id: event.id}) }}" class="btn btn-primary mb-3">Ajouter un participant</a>
+
+<table class="table mt-4">
     <thead>
         <tr>
             <th>ID</th>
@@ -51,5 +55,5 @@
         .openPopup();
 </script>
 
-<a href="{{ path('list_events') }}">Retour à la liste</a>
+<a href="{{ path('list_events') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
 {% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un événement{% endblock %}
+
+{% block body %}
+<h1>Modifier un événement</h1>
+
+<form method="post">
+    <div>
+        <label for="name">Nom :</label>
+        <input type="text" id="name" name="name" value="{{ event.name }}" required>
+    </div>
+    <div>
+        <label for="date">Date :</label>
+        <input type="datetime-local" id="date" name="date" value="{{ event.date|date('Y-m-d\TH:i') }}" required>
+    </div>
+    <div>
+        <label for="location">Lieu :</label>
+        <input type="text" id="location" name="location" value="{{ event.location }}" readonly>
+    </div>
+    <div>
+        <label for="latitude">Latitude :</label>
+        <input type="text" id="latitude" name="latitude" value="{{ event.latitude }}">
+    </div>
+    <div>
+        <label for="longitude">Longitude :</label>
+        <input type="text" id="longitude" name="longitude" value="{{ event.longitude }}">
+    </div>
+
+    <!-- Affichage de la carte avec Leaflet -->
+    <h2>Choisir un lieu sur la carte</h2>
+    <div id="map" style="height: 400px; width: 100%;"></div>
+
+    <button type="submit" class="btn btn-success">Sauvegarder</button>
+</form>
+
+<a href="{{ path('list_events') }}" class="btn btn-secondary">Annuler</a>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+    // Créer la carte Leaflet
+    var map = L.map('map').setView([{{ event.latitude }}, {{ event.longitude }}], 13); // Initialiser la carte avec les coordonnées de l'événement
+
+    // Ajouter une couche OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Ajouter un marqueur sur la carte avec les coordonnées existantes de l'événement
+    var marker = L.marker([{{ event.latitude }}, {{ event.longitude }}]).addTo(map);
+
+    // Mettre à jour les champs latitude et longitude lorsque l'utilisateur clique sur la carte
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lon = e.latlng.lng;
+
+        // Déplacer le marqueur à la nouvelle position
+        marker.setLatLng([lat, lon]);
+
+        // Mettre à jour les champs latitude et longitude
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lon;
+
+        // Mettre à jour le champ 'location' avec les coordonnées sous forme de texte
+        document.getElementById('location').value = lat + ", " + lon;
+    });
+</script>
+
+{% endblock %}
