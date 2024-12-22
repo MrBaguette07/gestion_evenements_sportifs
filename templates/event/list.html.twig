@@ -4,7 +4,6 @@
 
 {% block body %}
 <script>
-    // Fonction pour calculer la distance pour un événement spécifique
     function calculateDistance(eventId) {
         var userLat = parseFloat(document.getElementById('user_lat_' + eventId).value);
         var userLon = parseFloat(document.getElementById('user_lon_' + eventId).value);
@@ -13,7 +12,12 @@
             fetch(`/events/${eventId}/distance?lat=${userLat}&lon=${userLon}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('distance_' + eventId).textContent = data.distance + ' km';
+                    var distanceElement = document.getElementById('distance_' + eventId);
+                    if (distanceElement) {
+                        distanceElement.textContent = data.distance + ' km';
+                    } else {
+                        console.error('Element not found for eventId:', eventId);
+                    }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
@@ -23,20 +27,23 @@
         }
     }
 
-    // Fonction pour calculer la distance pour tous les événements
     function calculateAllDistances() {
         var userLatAll = parseFloat(document.getElementById('user_lat_all').value);
         var userLonAll = parseFloat(document.getElementById('user_lon_all').value);
 
         if (!isNaN(userLatAll) && !isNaN(userLonAll)) {
-            // On génère une liste des IDs des événements
-            var eventIds = {% for event in events %}{{ event.id }}{% if not loop.last %},{% endif %}{% endfor %};
-            
+            var eventIds = [{% for event in events %}{{ event.id }}{% if not loop.last %}, {% endif %}{% endfor %}];
+
             eventIds.forEach(function(eventId) {
                 fetch(`/events/${eventId}/distance?lat=${userLatAll}&lon=${userLonAll}`)
                     .then(response => response.json())
                     .then(data => {
-                        document.getElementById('distance_' + eventId).textContent = data.distance + ' km';
+                        var distanceElement = document.getElementById('distance_' + eventId);
+                        if (distanceElement) {
+                            distanceElement.textContent = data.distance + ' km';
+                        } else {
+                            console.error('Element not found for eventId:', eventId);
+                        }
                     })
                     .catch(error => {
                         console.error('Erreur:', error);
@@ -99,6 +106,7 @@
                             <input type="number" id="user_lat_{{ event.id }}" placeholder="Latitude" step="any" class="w-full p-2 mb-2 border rounded-lg">
                             <input type="number" id="user_lon_{{ event.id }}" placeholder="Longitude" step="any" class="w-full p-2 mb-2 border rounded-lg">
                             <button onclick="calculateDistance({{ event.id }})" class="bg-blue-500 text-white w-full py-2 rounded-lg hover:bg-blue-600 transition-colors">Calculer</button>
+                            <span id="distance_{{ event.id }}"></span> <!-- Ajout du span pour afficher la distance -->
                         </td>
                         <td class="px-4 py-2">
                             <div class="flex space-x-2">
