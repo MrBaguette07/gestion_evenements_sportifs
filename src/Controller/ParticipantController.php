@@ -38,7 +38,7 @@ class ParticipantController extends AbstractController
             return $this->redirectToRoute('view_event', ['id' => $id]);
         }
 
-        return $this->render('participant/add_participant.html.twig', [
+        return $this->render('participant/new.html.twig', [
             'event' => $event,
         ]);
     }

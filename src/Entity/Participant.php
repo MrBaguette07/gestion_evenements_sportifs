@@ -27,7 +27,6 @@ class Participant
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'participants')]
     private ?Event $event;
 
-    // Getters and setters
     public function getId(): ?int
     {
         return $this->id;

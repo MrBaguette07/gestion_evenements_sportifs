@@ -44,7 +44,6 @@ class Event
         $this->participants = new ArrayCollection();
     }
 
-    // Getters and setters
     public function getId(): ?int
     {
         return $this->id;

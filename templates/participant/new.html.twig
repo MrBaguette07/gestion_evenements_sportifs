@@ -5,7 +5,6 @@
 {% block body %}
 <h1>Ajouter un participant à l'événement "{{ event.name }}"</h1>
 
-<!-- Formulaire pour ajouter un participant -->
 <form method="POST" action="{{ path('add_participant', {id: event.id}) }}">
     <div class="mb-3">
         <label for="participant_name" class="form-label">Nom du participant</label>

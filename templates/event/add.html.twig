@@ -5,110 +5,95 @@
 {% block body %}
 <h1>Créer un événement</h1>
 
-<form method="post">
-    <div>
-        <label for="name">Nom :</label>
-        <input type="text" id="name" name="name" required>
+<form method="post" class="space-y-4">
+    <div class="mb-4">
+        <label for="name" class="block text-gray-700">Nom :</label>
+        <input type="text" id="name" name="name" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
     </div>
-    <div>
-        <label for="date">Date :</label>
-        <input type="datetime-local" id="date" name="date" required>
+    <div class="mb-4">
+        <label for="date" class="block text-gray-700">Date :</label>
+        <input type="datetime-local" id="date" name="date" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
     </div>
-    <div>
-        <label for="location">Lieu :</label>
-        <input type="text" id="location" name="location" readonly>
+    <div class="mb-4">
+        <label for="location" class="block text-gray-700">Lieu :</label>
+        <input type="text" id="location" name="location" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
     </div>
-    <div>
-        <label for="latitude">Latitude :</label>
-        <input type="text" id="latitude" name="latitude" onchange="updateMapFromFields()">
+    <div class="mb-4">
+        <label for="latitude" class="block text-gray-700">Latitude :</label>
+        <input type="text" id="latitude" name="latitude" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateMapFromFields()">
     </div>
-    <div>
-        <label for="longitude">Longitude :</label>
-        <input type="text" id="longitude" name="longitude" onchange="updateMapFromFields()">
+    <div class="mb-4">
+        <label for="longitude" class="block text-gray-700">Longitude :</label>
+        <input type="text" id="longitude" name="longitude" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateMapFromFields()">
     </div>
 
-    <!-- Affichage de la carte avec Leaflet -->
-    <h2>Choisir un lieu sur la carte</h2>
-    <div id="map" style="height: 400px; width: 100%;"></div>
+    <h2 class="text-xl font-bold mt-4 mb-2">Choisir un lieu sur la carte</h2>
+    <div id="map" class="w-full h-96"></div>
 
-    <button type="submit" class="btn btn-success">Créer</button>
+    <button type="submit" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-green-600 transition-colors">
+        Créer
+    </button>
 </form>
+
 
 <a href="{{ path('list_events') }}" class="btn btn-secondary">Annuler</a>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <script>
-    // Créer la carte Leaflet
-    var map = L.map('map').setView([48.8566, 2.3522], 13); // Initialiser la carte sur Paris
+    var map = L.map('map').setView([48.8566, 2.3522], 13); // J'ai intialisé la carte sur Paris
 
-    // Ajouter une couche OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Variable pour le marqueur
     var marker;
 
-    // Flag pour savoir si on vient d'une mise à jour manuelle des champs
     var isFieldUpdate = false;
 
-    // Ajouter un marqueur sur la carte au clic
     map.on('click', function(e) {
-        // Si les champs sont mis à jour manuellement, on n'affiche pas la carte
+        
         if (!isFieldUpdate) {
             var lat = e.latlng.lat;
             var lon = e.latlng.lng;
 
-            // Si un marqueur existe déjà, le supprimer
             if (marker) {
                 map.removeLayer(marker);
             }
 
-            // Ajouter un marqueur à la position cliquée
             marker = L.marker([lat, lon]).addTo(map);
 
-            // Mettre à jour les champs latitude et longitude
             document.getElementById('latitude').value = lat;
             document.getElementById('longitude').value = lon;
 
-            // Mettre à jour le champ 'location' avec les coordonnées sous forme de texte
             document.getElementById('location').value = lat + ", " + lon;
         }
     });
 
-    // Fonction pour mettre à jour la carte à partir des champs manuels
     function updateMapFromFields() {
-        // On met à jour le flag pour dire qu'on vient de modifier les champs
         isFieldUpdate = true;
 
-        // Récupérer les valeurs des champs latitude et longitude
         var lat = parseFloat(document.getElementById('latitude').value);
         var lon = parseFloat(document.getElementById('longitude').value);
 
-        // Vérifier si les coordonnées sont valides
         if (!isNaN(lat) && !isNaN(lon)) {
-            // Déplacer la carte à la position géocodée
             map.setView([lat, lon], 13);
 
-            // Si un marqueur existe, on le déplace, sinon on en crée un nouveau
             if (marker) {
                 marker.setLatLng([lat, lon]);
             } else {
                 marker = L.marker([lat, lon]).addTo(map);
             }
 
-            // Mettre à jour le champ 'location' avec les coordonnées
             document.getElementById('location').value = lat + ", " + lon;
         } else {
-            // Si les coordonnées sont invalides, supprimer le marqueur
+            
             if (marker) {
                 map.removeLayer(marker);
             }
             document.getElementById('location').value = "";
         }
 
-        // Réinitialiser le flag
         isFieldUpdate = false;
     }
 </script>
