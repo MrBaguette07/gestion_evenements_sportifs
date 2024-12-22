@@ -16,11 +16,101 @@
     </div>
     <div>
         <label for="location">Lieu :</label>
-        <input type="text" id="location" name="location" required>
+        <input type="text" id="location" name="location" readonly>
     </div>
+    <div>
+        <label for="latitude">Latitude :</label>
+        <input type="text" id="latitude" name="latitude" onchange="updateMapFromFields()">
+    </div>
+    <div>
+        <label for="longitude">Longitude :</label>
+        <input type="text" id="longitude" name="longitude" onchange="updateMapFromFields()">
+    </div>
+
+    <!-- Affichage de la carte avec Leaflet -->
+    <h2>Choisir un lieu sur la carte</h2>
+    <div id="map" style="height: 400px; width: 100%;"></div>
+
     <button type="submit" class="btn btn-success">Créer</button>
 </form>
 
 <a href="{{ path('list_events') }}" class="btn btn-secondary">Annuler</a>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+    // Créer la carte Leaflet
+    var map = L.map('map').setView([48.8566, 2.3522], 13); // Initialiser la carte sur Paris
+
+    // Ajouter une couche OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Variable pour le marqueur
+    var marker;
+
+    // Flag pour savoir si on vient d'une mise à jour manuelle des champs
+    var isFieldUpdate = false;
+
+    // Ajouter un marqueur sur la carte au clic
+    map.on('click', function(e) {
+        // Si les champs sont mis à jour manuellement, on n'affiche pas la carte
+        if (!isFieldUpdate) {
+            var lat = e.latlng.lat;
+            var lon = e.latlng.lng;
+
+            // Si un marqueur existe déjà, le supprimer
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            // Ajouter un marqueur à la position cliquée
+            marker = L.marker([lat, lon]).addTo(map);
+
+            // Mettre à jour les champs latitude et longitude
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+
+            // Mettre à jour le champ 'location' avec les coordonnées sous forme de texte
+            document.getElementById('location').value = lat + ", " + lon;
+        }
+    });
+
+    // Fonction pour mettre à jour la carte à partir des champs manuels
+    function updateMapFromFields() {
+        // On met à jour le flag pour dire qu'on vient de modifier les champs
+        isFieldUpdate = true;
+
+        // Récupérer les valeurs des champs latitude et longitude
+        var lat = parseFloat(document.getElementById('latitude').value);
+        var lon = parseFloat(document.getElementById('longitude').value);
+
+        // Vérifier si les coordonnées sont valides
+        if (!isNaN(lat) && !isNaN(lon)) {
+            // Déplacer la carte à la position géocodée
+            map.setView([lat, lon], 13);
+
+            // Si un marqueur existe, on le déplace, sinon on en crée un nouveau
+            if (marker) {
+                marker.setLatLng([lat, lon]);
+            } else {
+                marker = L.marker([lat, lon]).addTo(map);
+            }
+
+            // Mettre à jour le champ 'location' avec les coordonnées
+            document.getElementById('location').value = lat + ", " + lon;
+        } else {
+            // Si les coordonnées sont invalides, supprimer le marqueur
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            document.getElementById('location').value = "";
+        }
+
+        // Réinitialiser le flag
+        isFieldUpdate = false;
+    }
+</script>
 
 {% endblock %}

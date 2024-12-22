@@ -34,6 +34,22 @@
     </tbody>
 </table>
 
-<a href="{{ path('add_participant', {eventId: event.id}) }}">Ajouter un participant</a>
+<!-- Carte -->
+<div id="map" style="height: 400px; width: 100%;"></div>
+
+<script>
+    var map = L.map('map').setView([{{ event.latitude }}, {{ event.longitude }}], 13);
+
+    // Ajouter une couche de carte OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Ajouter un marqueur sur la carte à la position de l'événement
+    L.marker([{{ event.latitude }}, {{ event.longitude }}]).addTo(map)
+        .bindPopup("<b>{{ event.name }}</b><br>{{ event.location }}")
+        .openPopup();
+</script>
+
 <a href="{{ path('list_events') }}">Retour à la liste</a>
 {% endblock %}

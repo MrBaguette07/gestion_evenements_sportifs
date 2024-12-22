@@ -14,6 +14,9 @@
             <th>Nom</th>
             <th>Date</th>
             <th>Lieu</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Distance</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -24,15 +27,44 @@
                 <td>{{ event.name }}</td>
                 <td>{{ event.date|date('d-m-Y H:i') }}</td>
                 <td>{{ event.location }}</td>
+                <td>{{ event.latitude }}</td>
+                <td>{{ event.longitude }}</td>
                 <td>
-                    <a href="{{ path('view_event', {id: event.id}) }}">Voir</a>
+                    <input type="number" id="user_lat_{{ event.id }}" placeholder="Latitude" step="any">
+                    <input type="number" id="user_lon_{{ event.id }}" placeholder="Longitude" step="any">
+                    <button onclick="calculateDistance({{ event.id }})" class="btn btn-info">Calculer</button>
                 </td>
+                <td id="distance_{{ event.id }}"></td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="5">Aucun événement disponible.</td>
+                <td colspan="8">Aucun événement disponible.</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+    function calculateDistance(eventId) {
+        var userLat = parseFloat(document.getElementById('user_lat_' + eventId).value);
+        var userLon = parseFloat(document.getElementById('user_lon_' + eventId).value);
+
+        // Vérifiez si l'utilisateur a saisi les coordonnées
+        if (!isNaN(userLat) && !isNaN(userLon)) {
+            // Faites une requête à la route event_distance pour calculer la distance
+            fetch(`/events/${eventId}/distance?lat=${userLat}&lon=${userLon}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Affiche la distance dans le tableau
+                    document.getElementById('distance_' + eventId).textContent = data.distance + ' km';
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+        } else {
+            alert('Veuillez entrer des coordonnées valides.');
+        }
+    }
+</script>
+
 {% endblock %}

@@ -6,22 +6,34 @@ use App\Entity\Event;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\DistanceCalculator;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\Persistence\ManagerRegistry;
 
 class EventController extends AbstractController
 {
+    private $distanceCalculator;
+    private $doctrine;
+
+    public function __construct(DistanceCalculator $distanceCalculator, ManagerRegistry $doctrine)
+    {
+        $this->distanceCalculator = $distanceCalculator;
+        $this->doctrine = $doctrine;
+    }
+
     #[Route('/', name: 'home')]
     public function home(): Response
     {
-        return $this->render('home/index.html.twig');
+        return $this->render('home.html.twig');
     }
 
     #[Route('/events', name: 'list_events')]
-    public function listEvents(EntityManagerInterface $entityManager): Response
+    public function listEvents(): Response
     {
-        $events = $entityManager->getRepository(Event::class)->findAll();
+        // Utilisation du service Doctrine pour récupérer tous les événements
+        $events = $this->doctrine->getRepository(Event::class)->findAll();
 
         return $this->render('event/list.html.twig', [
             'events' => $events,
@@ -29,12 +41,13 @@ class EventController extends AbstractController
     }
 
     #[Route('/events/{id}', name: 'view_event', requirements: ['id' => '\d+'])]
-    public function viewEvent(int $id, EntityManagerInterface $entityManager): Response
+    public function viewEvent(int $id): Response
     {
-        $event = $entityManager->getRepository(Event::class)->find($id);
+        // Récupérer l'événement avec Doctrine
+        $event = $this->doctrine->getRepository(Event::class)->find($id);
 
         if (!$event) {
-            throw $this->createNotFoundException('L\'événement demandé n\'existe pas.');
+            throw $this->createNotFoundException('Événement non trouvé');
         }
 
         return $this->render('event/view.html.twig', [
@@ -42,41 +55,41 @@ class EventController extends AbstractController
         ]);
     }
 
-    #[Route('/events/{id}/distance', name: 'calculate_distance', requirements: ['id' => '\d+'])]
-    public function calculateDistanceToEvent(
-        int $id,
-        Request $request,
-        DistanceCalculator $distanceCalculator,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $event = $entityManager->getRepository(Event::class)->find($id);
+
+
+    #[Route('/events/{id}/distance', name: 'event_distance', methods: ['GET'])]
+    public function calculateDistanceToEvent(int $id, Request $request, DistanceCalculator $distanceCalculator): JsonResponse
+    {
+        $event = $this->doctrine->getRepository(Event::class)->find($id);
 
         if (!$event) {
-            throw $this->createNotFoundException('Événement introuvable.');
+            throw $this->createNotFoundException('Événement non trouvé');
         }
 
         $userLat = $request->query->get('lat');
         $userLon = $request->query->get('lon');
 
-        if (!$userLat || !$userLon) {
-            return new Response('Veuillez fournir les paramètres "lat" et "lon".', 400);
+        if (!is_numeric($userLat) || !is_numeric($userLon)) {
+            return $this->json(['error' => 'Les coordonnées doivent être valides.'], 400);
         }
 
-        [$eventLat, $eventLon] = $this->getCoordinatesFromLocation($event->getLocation());
-
+        // Calculer la distance
         $distance = $distanceCalculator->calculateDistance(
-            (float) $userLat,
-            (float) $userLon,
-            $eventLat,
-            $eventLon
+            $userLat, $userLon, $event->getLatitude(), $event->getLongitude()
         );
 
-        return new Response(sprintf('Distance jusqu\'à l\'événement : %.2f km', $distance));
+        // Retourner la distance en JSON
+        return $this->json([
+            'distance' => $distance,
+            'event' => $event->getName(),
+            'location' => $event->getLocation()
+        ]);
     }
+
 
     private function getCoordinatesFromLocation(string $location): array
     {
-        return [48.8566, 2.3522];
+        return [48.8566, 2.3522]; // Example: returns the coordinates of Paris
     }
 
     #[Route('/events/new', name: 'add_event')]
@@ -86,12 +99,14 @@ class EventController extends AbstractController
             $name = $request->request->get('name');
             $dateInput = $request->request->get('date');
             $location = $request->request->get('location');
+            $latitude = $request->request->get('latitude');
+            $longitude = $request->request->get('longitude');
 
             // Valider et traiter la date
             $date = \DateTime::createFromFormat('Y-m-d\TH:i', $dateInput);
 
             // Vérifications de validation
-            if (!$name || !$date || !$location) {
+            if (!$name || !$date || !$location || !$latitude || !$longitude) {
                 $this->addFlash('error', 'Tous les champs sont obligatoires.');
                 return $this->redirectToRoute('add_event');
             }
@@ -106,6 +121,8 @@ class EventController extends AbstractController
             $event->setName($name);
             $event->setDate($date);
             $event->setLocation($location);
+            $event->setLatitude($latitude);
+            $event->setLongitude($longitude);
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -116,4 +133,5 @@ class EventController extends AbstractController
 
         return $this->render('event/add.html.twig');
     }
+
 }
